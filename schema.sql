@@ -1,3 +1,5 @@
+-- TABLES
+
 create table users(
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     username varchar(100) NOT NULL,
@@ -18,8 +20,6 @@ create table leaders (
     FOREIGN KEY (department_id) REFERENCES departments(dept_id)
 );
 
-select id, first_name, last_name, dept_name from leaders join departments on leaders.department_id = departments.dept_id;
-
 create table votes(
     user_id int not null,
     leader_id int not null,
@@ -35,6 +35,9 @@ create table admins(
     password varchar(100) NOT NULL
 );
 
+
+-- TESTING COMMANDS
+select id, first_name, last_name, dept_name from leaders join departments on leaders.department_id = departments.dept_id;
 
 show triggers;
 select * from votes;
@@ -85,8 +88,8 @@ CALL getVoteDetails();
 
 
 
---STORED PROCEDURE END--
 
+--INSERT COMMANDS AND OTHER 
 
 select * from departments;
 
