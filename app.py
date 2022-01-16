@@ -1,9 +1,9 @@
-import dbm
-import json
 from operator import le, rshift
 from urllib import request
 from flask import Flask, jsonify, request
 import mysql.connector
+from flask_cors import CORS, cross_origin
+
 
 mydb = mysql.connector.connect(
   host="localhost",
@@ -25,6 +25,16 @@ def getUsers():
     mycursor.execute("select * from users")
     myresult = mycursor.fetchall()
     return myresult
+
+
+def getUserId(username, password):
+    mycursor = mydb.cursor()
+    query = f"select id from users where username='{username}' and password='{password}'"
+    mycursor.execute(query)
+    result = mycursor.fetchone()[0]
+    return result
+
+
 
 def loginUser(username, password):
     mycursor = mydb.cursor()
@@ -66,14 +76,10 @@ def getAdminDetails():
     cursor = mydb.cursor()
     cursor.callproc('getVoteDetails')
     result = []
-
-    # print out the result
     for res in cursor.stored_results():
-       result.append(res.fetchall())
-    
+       result.append(res.fetchall())    
     result1 = []
     for i in result[0]:
-        print(i)
         a, b = i
         result1.append({
             'user' : a,
@@ -89,7 +95,11 @@ def getAdminDetails():
 
 app = Flask(__name__)
 
+cors = CORS(app)
+
+
 @app.route("/leaders")
+@cross_origin()
 def leaders():
     result = getLeaders()
     resp = []
@@ -104,6 +114,7 @@ def leaders():
     return jsonify(resp)
 
 @app.route("/users")
+@cross_origin()
 def users():
     result = getUsers()
     resp = []
@@ -118,6 +129,7 @@ def users():
     return jsonify(resp)
 
 @app.route("/register", methods = ['POST'])
+@cross_origin()
 def register():
     req = request.json 
     username = req['username']
@@ -130,7 +142,10 @@ def register():
         })
 
     if registerUser(username=username, email=email, password=password):
+        user_id = getUserId(username=username, password=password)
+
         return jsonify({
+            'user_id' : user_id,
             'message' : "Successfull"
         })
     return jsonify({
@@ -138,13 +153,17 @@ def register():
     })
 
 @app.route("/login", methods = ['POST'])
+@cross_origin()
 def login():
     req = request.json 
     username = req['username']
     password = req['password']
 
     if loginUser(username=username, password=password) == 1:
+
+        user_id = getUserId(username=username, password=password)
         return jsonify({
+            'user_id' : user_id,
             'message' : "Successful"
         })
 
@@ -154,6 +173,7 @@ def login():
 
 
 @app.route("/vote", methods = ['POST'])
+@cross_origin()
 def vote():
     req = request.json
     user_id = req['user_id']
@@ -161,6 +181,7 @@ def vote():
     return userVote(user_id=user_id, leader_id=leader_id)
 
 @app.route("/adminDetails")
+@cross_origin()
 def adminDet():
     return getAdminDetails()
     
