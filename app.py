@@ -1,5 +1,6 @@
+import dbm
 import json
-from operator import le
+from operator import le, rshift
 from urllib import request
 from flask import Flask, jsonify, request
 import mysql.connector
@@ -7,7 +8,7 @@ import mysql.connector
 mydb = mysql.connector.connect(
   host="localhost",
   user="root",
-  password="YOUR_PASSWORD",
+  password="thyagarajan9980",
   database="dbms"
 )
 
@@ -58,6 +59,29 @@ def userVote(user_id, leader_id):
         return jsonify({
                 'message': 'You already voted'
         })
+
+
+
+def getAdminDetails():
+    cursor = mydb.cursor()
+    cursor.callproc('getVoteDetails')
+    result = []
+
+    # print out the result
+    for res in cursor.stored_results():
+       result.append(res.fetchall())
+    
+    result1 = []
+    for i in result[0]:
+        print(i)
+        a, b = i
+        result1.append({
+            'user' : a,
+            'leader' : b
+        })
+
+    return jsonify(result1)
+
 
 
 
@@ -135,6 +159,11 @@ def vote():
     user_id = req['user_id']
     leader_id = req['leader_id']
     return userVote(user_id=user_id, leader_id=leader_id)
+
+@app.route("/adminDetails")
+def adminDet():
+    return getAdminDetails()
+    
 
 
 if __name__ == '__main__':
